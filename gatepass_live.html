@@ -240,6 +240,7 @@
                 <table id="dataTable" style="display: none;">
                     <thead>
                         <tr>
+                            <th>S.No.</th>
                             <th>Pass No</th>
                             <th>Status</th>
                             <th>User ID</th>
@@ -251,7 +252,7 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
 
@@ -268,6 +269,8 @@
         const AIRTABLE_BASE_ID = "appSwFVqupYGAs0MW";
         const AIRTABLE_TABLE_ID = "tblfwpX28UHJumOrM"; 
 
+        const DATE_FIELD_NAME = "Date"; 
+
         async function fetchAirtableData() {
             const tableElement = document.getElementById('dataTable');
             const tableBody = document.getElementById('tableBody');
@@ -278,37 +281,52 @@
             tableElement.style.display = "none";
             refreshBtn.disabled = true;
 
-            const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`;
+            let url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}?sort[0][field]=${encodeURIComponent(DATE_FIELD_NAME)}&sort[0][direction]=desc`;
 
             try {
-                const response = await fetch(url, {
+                let response = await fetch(url, {
                     method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${AIRTABLE_TOKEN}`
-                    }
+                    headers: { "Authorization": `Bearer ${AIRTABLE_TOKEN}` }
                 });
 
-                if (!response.ok) throw new Error("Connection failed.");
+                if (!response.ok) {
+                    console.warn("API sorting failed. Retrying with simple download fallback...");
+                    url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`;
+                    response = await fetch(url, {
+                        method: "GET",
+                        headers: { "Authorization": `Bearer ${AIRTABLE_TOKEN}` }
+                    });
+                }
+
+                if (!response.ok) throw new Error("Connection failed completely.");
 
                 const data = await response.json();
-                const records = data.records;
+                let records = data.records;
 
                 if (!records || records.length === 0) {
                     statusMessage.innerText = "No gate pass logs available.";
                     return;
                 }
 
-                tableBody.innerHTML = "";
+                if (!url.includes('sort[')) {
+                    records.sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime));
+                }
 
-                records.forEach(record => {
+                tableBody.innerHTML = "";
+                
+                const totalRecords = records.length;
+
+                records.forEach((record, index) => {
                     const fields = record.fields;
-                    
-                    // Pulling directly from your 'Status' column verified in the screenshot
                     const currentStatus = fields.Status || 'Pending';
                     const isApproved = currentStatus.toLowerCase() === 'approved';
 
+                    // Calculates dynamic serial number based on position
+                    const serialNumber = totalRecords - index;
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
+                        <td style="font-weight: 600; color: #64748B;">${serialNumber}</td>
                         <td><span class="pass-badge">${fields.PassNo || '—'}</span></td>
                         <td>
                             <span class="status-pill ${isApproved ? 'status-approved' : 'status-pending'}">
