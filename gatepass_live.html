@@ -43,6 +43,25 @@
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
         }
 
+        /* Top Left Corner Logo Container */
+        .logo-wrapper {
+            position: absolute;
+            left: 20px;
+            top: 8%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        /* This filter turns the dark red text components pure white so they contrast beautifully */
+        .corner-logo {
+           display: block;
+            height: auto;
+            max-height: 65px;
+            width: 170px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
         .header-brand {
             font-size: 1.8rem;
             font-weight: 800;
@@ -119,6 +138,7 @@
             font-weight: 700;
         }
 
+       
         .btn-refresh {
             padding: 8px 16px;
             background-color: var(--charcoal);
@@ -175,7 +195,7 @@
         tr:hover {
             background-color: #F8FAFC;
         }
-
+        
         .status-pill {
             display: inline-block;
             padding: 5px 12px;
@@ -219,8 +239,13 @@
     </style>
 </head>
 <body>
-
+       
     <header>
+
+         <div class="logo-wrapper">
+            <img src="Raymond100YearsLogo_f02986c7_d525_43d0_b5a1_2fde4d3ede8d.png" alt="Raymond 100 Years" class="corner-logo">
+        </div>
+
         <div class="header-brand">Raymond</div>
         <div class="header-sub">Lifestyle Limited • Textile Division • Pandhurna</div>
         <span class="header-badge">Security Gate Guard Monitor</span>
